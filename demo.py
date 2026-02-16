@@ -29,6 +29,12 @@ def main():
     )
 
     agent = RLM(model_name=model_name, verbose=True)
+    root_prompt = (
+        "Solve the task using Python code. "
+        "The task text is available in REPL variable `context`. "
+        "Use `rlm_query(...)` only for focused sub-problems. "
+        "End with 'Final Answer:'."
+    )
 
     # A multi-step task that benefits from code execution
     query = (
@@ -39,7 +45,7 @@ def main():
     console.print(f"[bold green]User Query:[/bold green] {query}\n")
 
     try:
-        result = agent.completion(query)
+        result = agent.completion(query, root_prompt=root_prompt)
         console.print(f"\n[bold purple]═══ Final Result ═══[/bold purple]")
         console.print(f"[bold]{result}[/bold]")
     except Exception as e:

@@ -38,6 +38,9 @@ GROQ_API_KEY=gsk_your_key_here
 uv run python demo.py
 ```
 
+The root model receives a short `root_prompt`, while the full task payload is injected
+into the sandbox as `context`. This keeps large prompts out of direct chat history.
+
 ### Model Configuration
 ```bash
 # Groq (default) — fast inference, free tier available
@@ -66,8 +69,11 @@ rlm-demo/
 
 ## How It Works
 1. **User** sends a query.
-2. **RLM** asks the LLM for a plan (Thought) and code (Action).
-3. **Sandbox** executes the code and returns stdout (Observation).
-4. **RLM** feeds the observation back and repeats.
-5. If the LLM writes `rlm_query("sub-task")` in its code, a **new RLM agent** is spawned with a **fresh context** to handle the sub-task. The parent only sees the final answer.
-6. When the LLM outputs `Final Answer:`, the loop ends.
+2. **RLM** sends a compact root instruction to the LLM (not the full query text).
+3. The full task text is available in Python as `context` inside the sandbox.
+4. **RLM** asks the LLM for a plan (Thought) and code (Action).
+5. **Sandbox** executes the code and returns stdout (Observation).
+6. **RLM** feeds the observation back and repeats.
+7. If the LLM writes `rlm_query("sub-task")` in its code, a **new RLM agent** is spawned with a **fresh context** to handle the sub-task. The parent only sees the final answer.
+8. Recursion is capped via `max_depth` to prevent runaway child-agent loops.
+9. When the LLM outputs `Final Answer:`, the loop ends.
